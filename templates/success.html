@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Transformador de planillas Moodle-SIGEAD</title>
+
+    <!-- Enlace a la hoja de estilos -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <header class="cont-titulo">
+        <h1>Transformador de planillas Moodle-SIGEAD</h1>
+    </header>
+
+    <section class="cont-principal">
+        <div class="cont-form">
+            <form class="form" method="post" enctype="multipart/form-data">
+                <!-- Nombre de materia -->
+                <div class="materia">
+                    <label for="materia">Nombre de la Materia:</label>
+                    <input type="text" name="materia" required>
+                </div>
+
+                <!-- Código de materia -->
+                <div class="codigo">
+                    <label for="codigo-materia">Código de la Materia:</label>
+                    <input type="number" name="codigo-materia" required>
+                </div>
+
+                <!-- Carga de archivo con notas -->
+                <div class="cargar-archivo">
+                    <input type="file" name="file" accept=".xlsx, .xls, .ods" id="file-button">
+                </div>
+
+                <!-- Procesar archivo -->
+                <div class="procesar-archivo">
+                    <button type="submit">Procesar Archivo</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</body>
+</html>
