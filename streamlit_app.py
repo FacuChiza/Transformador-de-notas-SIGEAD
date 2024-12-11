@@ -29,7 +29,13 @@ def centrar_contenido():
             padding-right: 10%;
         }
 
-        input:invalid {
+        input:focus {
+            outline: 2px solid #ffffff !important; 
+            border-color: #ffffff !important; 
+        }
+
+        textarea:focus {
+            outline: 2px solid #ffffff !important;
             border-color: #ffffff !important;
         }
         </style>
