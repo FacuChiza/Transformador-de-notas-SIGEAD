@@ -1,53 +1,77 @@
-from flask import Flask, render_template, request, send_from_directory, url_for, redirect
-import os
+import openpyxl
+import streamlit as st
 import pandas as pd
+from PIL import Image
 
-app = Flask(__name__)
-  
 def redondear_nota(nota):
-  try:
-    if nota > 10:
-        nota = nota / 10
-    nota = round(nota, 1)
-    nota_redondeada = round(nota)
-    return nota_redondeada
-  except ValueError:
-     return "Ausente"
+    try:
+        if nota > 10:
+            nota = nota / 10
+        nota = round(nota, 1)
+        return round(nota)
+    except (ValueError, TypeError):
+        return "Ausente"
 
-  
-@app.route('/')
-def index():
-  return render_template('success.html')
+def centrar_contenido():
+    st.markdown(
+        """
+        <style>
+        .stDataFrame { 
+            margin: auto; 
+        }
+        .stMarkdown { 
+            text-align: center; 
+        }
+        .block-container {
+            padding-top: 40px;
+            max-width: 80%; 
+            padding-left: 10%;
+            padding-right: 10%;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
-@app.route('/', methods=['POST'])
-def upload_file():
-  materia = request.form['materia']
-  file = request.files['file']
-  codigo_materia = request.form['codigo-materia']
 
-  if file and materia:
-    filename = f"Archivo Transformado {materia}.csv"
-    
-    os.makedirs("uploads", exist_ok=True)
-    file.save(os.path.join("uploads", filename))
-    df = pd.read_excel(os.path.join("uploads", filename))
-    df.columns = ["Nom", "Ape", "Num", "Inst", "Depa", "Cues", "Ult"]
-    df = df.drop(columns=["Nom", "Ape", "Inst", "Ult"])
-    df.columns = ["Personal", "CursadaId", "Nota"]
-    df["Nota"] = df["Nota"].apply(redondear_nota)
-    df.iloc[0:, 1] = codigo_materia    
-    df.to_csv(os.path.join("uploads", filename), index=False)
+centrar_contenido()
 
-    return redirect(url_for("download_file", filename=filename))
+st.title("Transformador de Planillas SIGEAD")
 
-@app.route("/download/<filename>")
-def download_file(filename):
-    return send_from_directory("uploads", filename, as_attachment=True)
+uploaded_file = st.file_uploader("Sube tu archivo Excel o ODS", type=["xlsx", "ods"])
 
-@app.errorhandler(Exception)
-def error_handler(error):
-    imagen_url = url_for('static', filename='static/css/images/ejemplo.png')
-    return render_template('error.html', error_message=str(error), imagen_url=imagen_url)
+nombre_materia = st.text_input("Nombre de la Materia", help="Ingrese el nombre completo de la materia.")
+codigo_materia = st.text_input("Código de Materia", help="Ingrese el código de la materia asociado a las notas.")
 
-if __name__ == '__main__':
-  app.run(debug=True)
+if uploaded_file and nombre_materia and codigo_materia:
+    try:
+        file_extension = uploaded_file.name.split(".")[-1]
+        file_extension = f".{file_extension}"
+        if file_extension == ".xlsx":
+            df = pd.read_excel(uploaded_file, engine="openpyxl")
+        elif file_extension == ".ods":
+            df = pd.read_excel(uploaded_file, engine="odf")
+        else:
+            raise ValueError("Formato no soportado.")
+
+        df.columns = ["Nom", "Ape", "Num", "Inst", "Depa", "Cues", "Ult"]
+        df = df.drop(columns=["Nom", "Ape", "Inst", "Ult"])
+        df.columns = ["Personal", "CursadaId", "Nota"]
+        df["Nota"] = df["Nota"].apply(redondear_nota)
+        df["CursadaId"] = codigo_materia
+
+        st.write("Previsualización del archivo procesado:")
+        st.dataframe(df, height=600, width=1000) 
+
+
+        archivo_nombre = f"Archivo_Transformado_{nombre_materia}.csv"
+        st.download_button(
+            label="Descargar archivo transformado",
+            data=df.to_csv(index=False).encode("utf-8"),
+            file_name=archivo_nombre,
+            mime="text/csv"
+        )
+    except Exception as e:
+        st.error(f"Error al procesar el archivo, por favor revise los datos o nombres de las columnas.           Aquí se muestra un ejemplo del formato correcto")
+        imagen = Image.open("static/css/images/ejemplo.png")
+        st.image(imagen, caption="Ejemplo de formato correcto", use_container_width=True)
