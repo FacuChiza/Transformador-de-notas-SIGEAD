@@ -28,6 +28,10 @@ def centrar_contenido():
             padding-left: 10%;
             padding-right: 10%;
         }
+
+        input:invalid {
+            border-color: #ffffff !important;
+        }
         </style>
         """,
         unsafe_allow_html=True,
