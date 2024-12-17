@@ -64,8 +64,8 @@ if uploaded_file and nombre_materia and codigo_materia:
         else:
             raise ValueError("Formato no soportado.")
 
-        df.columns = ["Nom", "Ape", "Num", "Inst", "Depa", "Cues", "Ult"]
-        df = df.drop(columns=["Nom", "Ape", "Inst", "Ult"])
+        df.columns = ["Nom", "Ape", "Num", "Inst", "Depa", "Susp", "Cues", "Ult"]
+        df = df.drop(columns=["Nom", "Ape", "Inst", "Susp", "Ult"])
         df.columns = ["Personal", "CursadaId", "Nota"]
         df["Nota"] = df["Nota"].apply(redondear_nota)
         df["CursadaId"] = codigo_materia
